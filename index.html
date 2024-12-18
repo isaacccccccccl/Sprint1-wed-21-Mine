@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body onload="onInitGame()">
+    <h1>Mine Sweeper</h1>
+    <table class="show-table">
+        <tbody>
+            <tr>
+                <td class="timer">0:000</td>
+                <td class="smile" onclick="restartGame()">😁</td>
+                <td class="mine"></td>
+                <td class="life"></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="board"></div>
+    
+
+    <div class="buttons">
+        <button class="button" onclick="setGameSize(this)">Easy</button>
+        <button class="button" onclick="setGameSize(this)">Medium</button>
+        <button class="button" onclick="setGameSize(this)">Expert</button>
+
+    </div>
+    </br>
+    </br>
+    </br>
+    </br>
+    <div class="modal"><span></span>
+        <button class="button" onclick="restartGame()">restart</button>
+    </div>
+    <div class="footer">Isaac Levy</div>
+    <script src="js/util.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

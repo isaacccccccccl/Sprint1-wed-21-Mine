@@ -1,0 +1,86 @@
+h1 {
+    text-align: center;
+}
+
+.show-table{
+    border: 1px solid black;
+    border-collapse: collapse;
+    margin: auto;
+    margin-top: 50px;
+}
+
+.show-table td{
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    transition: 0.5s;
+    border: 1px solid black;
+}
+
+table {
+    border: 1px solid black;
+    border-collapse: collapse;
+    margin: auto;
+    margin-top: 50px;
+}
+
+.board td {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    transition: 0.5s;
+    border: 1px solid black;
+}
+
+.board td:hover {
+    background-color: lightsalmon;
+}
+
+td.occupied {
+    background-color: lightgray;
+}
+
+.hide {
+    background-color: gray;
+    cursor: pointer;
+}
+
+.footer {
+    background-color: grey;
+    text-align: center;
+}
+
+.modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: none;
+    width: 300px;
+
+    padding: 5px;
+    background-color: lightseagreen;
+}
+
+.modal button {
+    float: right;
+}
+
+.buttons {
+    width: 70vh;
+    text-align: center;
+    margin: auto;
+    margin-top: 50px;
+}
+
+.button {
+    width: 50%;
+
+}
+
+.button:hover {
+    background-color: lightsalmon;
+}
+
+.life {
+    
+}
