@@ -11,18 +11,17 @@ h1 {
 
 .show-table td{
     width: 50px;
-    /* height: 30px; */
+    background-color: grey;
     text-align: center;
     transition: 0.5s;
     border: 1px solid black;
 }
 
 .show-table td:hover{
-    background-color: aqua;
-    
+    background-color: rgb(71, 72, 72);
 }
 
-.smile:hover {
+.click:hover {
     cursor: pointer;
 }
 
@@ -64,7 +63,7 @@ table {
     width: 300px;
 
     padding: 5px;
-    background-color: lightseagreen;
+    background-color: rgb(98, 128, 127);
 }
 
 .modal button {
@@ -84,7 +83,8 @@ table {
 }
 
 .button:hover {
-    background-color: lightsalmon;
+    background-color: rgb(168, 145, 135);
+    cursor: pointer;
 }
 
 .safe {

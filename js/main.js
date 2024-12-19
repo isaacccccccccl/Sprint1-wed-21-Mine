@@ -15,6 +15,7 @@ const MEGAHINT = '🐱‍🏍'
 
 
 
+
 // The model 
 const gLevel = {
     SIZE: 4,
@@ -55,8 +56,11 @@ var gMegaHintCount
 var gTimerInterval
 var gStartTime
 
+var gIdxI1
+var gIdxJ1
+var gIdxI2
+var gIdxJ2
 
-// create a 4X4 matrix
 
 
 function onInitGame() {
@@ -71,12 +75,14 @@ function onInitGame() {
     gHintCount = 3
     gFlagCount = 0
     gCountSafeClick = 3
+    gMegaHintCount = 0
 
     //render life and mine cell
     renderSafe()
     renderLifeCell()
     renderMineCell()
     renderHint()
+    renderMega()
     // create two boards 1 is with objects the second is with shapes for render
 
     buildBoard()
@@ -93,28 +99,47 @@ function buildBoard() {
 
 function onCellClicked(ev, onBtn, i, j) {
     if (gGame.isOn) {
-        if (gHint && gHintCount >= 0) {
-            showHint(i, j)
-            gHint = false
-            setTimeout(hideHint, 1000, i, j)
-            return
-        }
-        if (ev.button === 2 && gBoardRender[i][j] !== FLAG && gBoardObject[i][j].isShown !== true) {
-            updateBoard(i, j, true, FLAG)
-            checkGameStatus(i, j, ev.button, onBtn)
-            gFlagCount++
-            renderMineCell()
-        } else if (ev.button === 2 && gBoardRender[i][j] === FLAG) {
-            if (gBoardObject[i][j].isMine === true) gGame.markedCount--
-            updateBoard(i, j, false, EMPTY)
-            gFlagCount--
-            checkGameStatus(i, j, ev.button, onBtn)
-            renderMineCell()
-        } else if (ev.button === 0 && gBoardObject[i][j].isShown !== true) {
-            onBtn.classList.remove('hide')
-            gBoardObject[i][j].isShown = true
-            findAndShowNegs(i, j)
-            checkGameStatus(i, j, ev.button, onBtn)
+        if (gMegaHint) {
+            gMegaHintCount++
+            if (gMegaHintCount === 1) {
+                gIdxI1 = i
+                gIdxJ1 = j
+              
+            } else {
+                gMegaHint = false
+                gIdxI2 = i
+                gIdxJ2 = j
+                var area = getArea(gIdxI1, gIdxJ1, gIdxI2, gIdxJ2)
+                console.log(area)
+                showMegaHint(gBoardObject, area[0], area[1], area[2], area[3])
+                setTimeout(hideMegaHint, 1500, gBoardObject, area[0], area[1], area[2], area[3])
+            }
+
+        } else {
+
+            if (gHint && gHintCount >= 0) {
+                showHint(i, j)
+                gHint = false
+                setTimeout(hideHint, 1000, i, j)
+                return
+            }
+            if (ev.button === 2 && gBoardRender[i][j] !== FLAG && gBoardObject[i][j].isShown !== true) {
+                updateBoard(i, j, true, FLAG)
+                checkGameStatus(i, j, ev.button, onBtn)
+                gFlagCount++
+                renderMineCell()
+            } else if (ev.button === 2 && gBoardRender[i][j] === FLAG) {
+                if (gBoardObject[i][j].isMine === true) gGame.markedCount--
+                updateBoard(i, j, false, EMPTY)
+                gFlagCount--
+                checkGameStatus(i, j, ev.button, onBtn)
+                renderMineCell()
+            } else if (ev.button === 0 && gBoardObject[i][j].isShown !== true) {
+                onBtn.classList.remove('hide')
+                gBoardObject[i][j].isShown = true
+                findAndShowNegs(i, j)
+                checkGameStatus(i, j, ev.button, onBtn)
+            }
         }
 
     } else if (ev.button === 0 && !gStopGame) {
@@ -311,7 +336,6 @@ function renderSmile(isVectory) {
     else elSmile.innerText = LOSESMILE
 }
 
-
 function hintClicked() {
     if (!gGame.isOn) return
     gHint = true
@@ -384,29 +408,31 @@ function rederLose() {
 }
 
 function megaHint() {
+    if (gMegaHintCount > 2 || !gGame.isOn) return
     gMegaHint = true
-    gMegaHintCount = 1
 }
 
-function getArea(onBtn) {
+function getArea(idxI1, idxJ1, idxI2, idxJ2) {
+    var buttonIStart = (idxI1 < idxI2) ? idxI1 : idxI2
+    var buttonIEnd = (idxI1 > idxI2) ? idxI1 : idxI2
+    var buttonJStart = (idxJ1 < idxJ2) ? idxJ1 : idxJ2
+    var buttonJEnd = (idxJ1 > idxJ2) ? idxJ1 : idxJ2
 
-    return document.querySelector(`.cell-${i}-${j}`)
+    return [buttonIStart, buttonIEnd, buttonJStart, buttonJEnd]
 
-    gMegaHintCount++
 }
 
 function showMegaHint(mat, rowIdxStart, rowIdxEnd, colIdxStart, colIdxEnd) {
+    console.log(rowIdxStart, rowIdxEnd, colIdxStart, colIdxEnd)
     for (var i = rowIdxStart; i <= rowIdxEnd; i++) {
         if (i < 0 || i >= gBoardObject.length) continue
         var row = mat[i]
         for (var j = colIdxStart; j <= colIdxEnd; j++) {
-            if (i === cellI && j === cellJ) continue
             if (j < 0 || j >= gBoardObject[i].length) continue
             if (gBoardObject[i][j].isShown) continue
             renderCell({ i, j }, gBoardRender[i][j])
         }
     }
-
 }
 
 function hideMegaHint(mat, rowIdxStart, rowIdxEnd, colIdxStart, colIdxEnd) {
@@ -414,7 +440,6 @@ function hideMegaHint(mat, rowIdxStart, rowIdxEnd, colIdxStart, colIdxEnd) {
         if (i < 0 || i >= gBoardObject.length) continue
         var row = mat[i]
         for (var j = colIdxStart; j <= colIdxEnd; j++) {
-            if (i === cellI && j === cellJ) continue
             if (j < 0 || j >= gBoardObject[i].length) continue
             if (gBoardObject[i][j].isShown) continue
             renderCell({ i, j }, EMPTY)
