@@ -6,12 +6,13 @@
 const EMPTY = ''
 const MINE = '🧨'
 const FLAG = '🚩'
-const FULLLIFE = '❤❤❤'
-const TWOLIFE = '❤❤'
-const ONELIFE = '❤'
+const LIFE = '❤'
 const WINSMILE = '😎'
 const PLAYSMILE = '😁'
 const LOSESMILE = '☹'
+const HINTS = '💡'
+const MEGAHINT = '🐱‍🏍'
+
 
 
 // The model 
@@ -43,6 +44,13 @@ var gNegs
 var gFlagCount
 var gLifeCount
 var gStopGame
+var gHint
+var gHintCount
+var gCountSafeClick
+var gMines
+
+var gMegaHint
+var gMegaHintCount
 
 var gTimerInterval
 var gStartTime
@@ -60,11 +68,15 @@ function onInitGame() {
     gStopGame = false
     gEmptyCell = (gLevel.SIZE ** 2) - gLevel.MINES
     gLifeCount = 3
+    gHintCount = 3
     gFlagCount = 0
+    gCountSafeClick = 3
 
     //render life and mine cell
-    renderLifeCell(gLifeCount)
+    renderSafe()
+    renderLifeCell()
     renderMineCell()
+    renderHint()
     // create two boards 1 is with objects the second is with shapes for render
 
     buildBoard()
@@ -79,9 +91,14 @@ function buildBoard() {
     gBoardRender = createBoard(gLevel.SIZE, gLevel.SIZE)
 }
 
-
 function onCellClicked(ev, onBtn, i, j) {
     if (gGame.isOn) {
+        if (gHint && gHintCount >= 0) {
+            showHint(i, j)
+            gHint = false
+            setTimeout(hideHint, 1000, i, j)
+            return
+        }
         if (ev.button === 2 && gBoardRender[i][j] !== FLAG && gBoardObject[i][j].isShown !== true) {
             updateBoard(i, j, true, FLAG)
             checkGameStatus(i, j, ev.button, onBtn)
@@ -95,6 +112,7 @@ function onCellClicked(ev, onBtn, i, j) {
             renderMineCell()
         } else if (ev.button === 0 && gBoardObject[i][j].isShown !== true) {
             onBtn.classList.remove('hide')
+            gBoardObject[i][j].isShown = true
             findAndShowNegs(i, j)
             checkGameStatus(i, j, ev.button, onBtn)
         }
@@ -180,6 +198,7 @@ function randomMines(amount, celli, cellj) {
 
     var allEmptyCells = emptyCells()
     // console.log(allEmptyCells)
+    gMines = []
 
 
     for (var i = 0; i < amount; i++) {
@@ -194,11 +213,12 @@ function randomMines(amount, celli, cellj) {
         }
         gBoardObject[allEmptyCells[randIdx].i][allEmptyCells[randIdx].j].isMine = true
         gBoardRender[allEmptyCells[randIdx].i][allEmptyCells[randIdx].j] = MINE
-        allEmptyCells.splice(randIdx, 1)
+        var deleted = allEmptyCells.splice(randIdx, 1)[0]
+        gMines.push(deleted)
     }
 
+    // console.log('gmines', gMines)
 }
-
 
 function setGameSize(elBtn) {
     if (elBtn.innerText === 'Expert') {
@@ -214,12 +234,13 @@ function setGameSize(elBtn) {
     restartGame()
 }
 
-
 function checkGameStatus(i, j, ev, onBtn) {
     // win all of the flags are mines
     if (gBoardRender[i][j] === FLAG && gBoardObject[i][j].isMine === true) {
         gGame.markedCount++
     }
+
+    // console.log('markcount', gGame.markedCount)
 
     if (gGame.markedCount === gLevel.MINES && gEmptyCell === 0) {
         stopTimer()
@@ -232,6 +253,7 @@ function checkGameStatus(i, j, ev, onBtn) {
         if (gLifeCount > 0) {
             anotherLife(i, j, onBtn)
         } else {
+            rederLose()
             stopTimer()
             showModal(false)
             renderSmile(false)
@@ -241,11 +263,11 @@ function checkGameStatus(i, j, ev, onBtn) {
 }
 
 function anotherLife(i, j, onBtn) {
-    gLifeCount--
     gGame.markedCount--
+    if (gGame.markedCount < 0) gGame.markedCount = 0
     gBoardObject[i][j].isShown = false
     gBoardRender[i][j] = gBoardObject[i][j].minesAroundCount
-    renderLifeCell(gLifeCount)
+    renderLifeCell()
     renderCell({ i, j }, MINE)
     setTimeout(renderCell, 3000, { i, j }, EMPTY)
     onBtn.classList.add('hide')
@@ -268,17 +290,17 @@ function restartGame() {
 
 function renderMineCell() {
     var elMine = document.querySelector('.mine')
-    elMine.innerText = gLevel.MINES - gFlagCount
+    var mineCell = (gLevel.MINES - gFlagCount > 0) ? gLevel.MINES - gFlagCount : 0
+    elMine.innerText = mineCell
 }
 
-function renderLifeCell(lifeCount) {
+function renderLifeCell() {
     var elMine = document.querySelector('.life')
-    console.log(lifeCount)
-    if (lifeCount === 3) {
-        elMine.innerText = FULLLIFE
-    } else if (lifeCount == 2) {
-        elMine.innerText = TWOLIFE
-    } else if (lifeCount == 1){
+    // console.log('lifeCount', lifeCount)
+    if (gLifeCount > 0) {
+        elMine.innerText = LIFE.repeat(gLifeCount)
+        gLifeCount--
+    } else {
         elMine.innerText = EMPTY
     }
 }
@@ -290,4 +312,117 @@ function renderSmile(isVectory) {
 }
 
 
+function hintClicked() {
+    if (!gGame.isOn) return
+    gHint = true
+    renderHint()
+}
 
+function showHint(cellI, cellJ) {
+    for (var i = cellI - 1; i <= cellI + 1; i++) {
+        if (i < 0 || i >= gBoardObject.length) continue
+        for (var j = cellJ - 1; j <= cellJ + 1; j++) {
+            if (i === cellI && j === cellJ) continue
+            if (j < 0 || j >= gBoardObject[i].length) continue
+            if (gBoardObject[i][j].isShown) continue
+            renderCell({ i, j }, gBoardRender[i][j])
+        }
+    }
+
+}
+
+function hideHint(cellI, cellJ) {
+    for (var i = cellI - 1; i <= cellI + 1; i++) {
+        if (i < 0 || i >= gBoardObject.length) continue
+        for (var j = cellJ - 1; j <= cellJ + 1; j++) {
+            if (i === cellI && j === cellJ) continue
+            if (j < 0 || j >= gBoardObject[i].length) continue
+            if (gBoardObject[i][j].isShown) continue
+            renderCell({ i, j }, EMPTY)
+        }
+    }
+}
+
+function renderHint() {
+    var elHint = document.querySelector('.hint')
+    // console.log('gHint', gHint)
+    if (gHintCount >= 0) {
+        elHint.innerText = HINTS.repeat(gHintCount)
+        gHintCount--
+    }
+}
+
+// safe click
+function safeClick() {
+    // find cells that are not shown
+    if (gCountSafeClick < 0 || !gGame.isOn) return
+    var notShownCells = emptyCells()
+
+    var randIdx = getRandomInt(0, notShownCells.length)
+
+    var elSafeCell = document.querySelector(`.cell-${notShownCells[randIdx].i}-${notShownCells[randIdx].j}`)
+    elSafeCell.classList.add('safe')
+
+    setTimeout(() => { elSafeCell.classList.remove('safe') }, 1500)
+    renderSafe()
+
+}
+
+function renderSafe() {
+    var elSafeBtn = document.querySelector('.safe-click')
+    elSafeBtn.innerText = gCountSafeClick
+    gCountSafeClick--
+}
+
+function rederLose() {
+    // use gMines to render the cell with mine and change the color to red
+    for (var i = 0; i < gMines.length; i++) {
+        renderCell(gMines[i], MINE)
+        var elSafeBtn = document.querySelector(`.cell-${gMines[i].i}-${gMines[i].j}`)
+        elSafeBtn.classList.add('mine-cell')
+    }
+}
+
+function megaHint() {
+    gMegaHint = true
+    gMegaHintCount = 1
+}
+
+function getArea(onBtn) {
+
+    return document.querySelector(`.cell-${i}-${j}`)
+
+    gMegaHintCount++
+}
+
+function showMegaHint(mat, rowIdxStart, rowIdxEnd, colIdxStart, colIdxEnd) {
+    for (var i = rowIdxStart; i <= rowIdxEnd; i++) {
+        if (i < 0 || i >= gBoardObject.length) continue
+        var row = mat[i]
+        for (var j = colIdxStart; j <= colIdxEnd; j++) {
+            if (i === cellI && j === cellJ) continue
+            if (j < 0 || j >= gBoardObject[i].length) continue
+            if (gBoardObject[i][j].isShown) continue
+            renderCell({ i, j }, gBoardRender[i][j])
+        }
+    }
+
+}
+
+function hideMegaHint(mat, rowIdxStart, rowIdxEnd, colIdxStart, colIdxEnd) {
+    for (var i = rowIdxStart; i <= rowIdxEnd; i++) {
+        if (i < 0 || i >= gBoardObject.length) continue
+        var row = mat[i]
+        for (var j = colIdxStart; j <= colIdxEnd; j++) {
+            if (i === cellI && j === cellJ) continue
+            if (j < 0 || j >= gBoardObject[i].length) continue
+            if (gBoardObject[i][j].isShown) continue
+            renderCell({ i, j }, EMPTY)
+        }
+    }
+}
+
+function renderMega() {
+    var elMegaHint = document.querySelector('.mega-hint')
+    elMegaHint.innerText = MEGAHINT
+}

@@ -10,11 +10,20 @@ h1 {
 }
 
 .show-table td{
-    width: 30px;
-    height: 30px;
+    width: 50px;
+    /* height: 30px; */
     text-align: center;
     transition: 0.5s;
     border: 1px solid black;
+}
+
+.show-table td:hover{
+    background-color: aqua;
+    
+}
+
+.smile:hover {
+    cursor: pointer;
 }
 
 table {
@@ -36,9 +45,6 @@ table {
     background-color: lightsalmon;
 }
 
-td.occupied {
-    background-color: lightgray;
-}
 
 .hide {
     background-color: gray;
@@ -66,14 +72,14 @@ td.occupied {
 }
 
 .buttons {
-    width: 70vh;
+    width: 80vh;
     text-align: center;
     margin: auto;
     margin-top: 50px;
 }
 
 .button {
-    width: 50%;
+    width: 75%;
 
 }
 
@@ -81,6 +87,10 @@ td.occupied {
     background-color: lightsalmon;
 }
 
-.life {
-    
+.safe {
+    background-color: blue;
+}
+
+.mine-cell {
+    background-color: red;
 }

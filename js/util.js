@@ -110,11 +110,11 @@ function emptyCells() {
     var emptyCells = []
 
 
-    for (var i = 1; i < gBoardObject.length - 1; i++) {
-        for (var j = 1; j < gBoardObject[0].length - 1; j++) {
+    for (var i = 0; i < gBoardObject.length; i++) {
+        for (var j = 0; j < gBoardObject[0].length; j++) {
             var currCell = gBoardObject[i][j]
 
-            if (currCell.isMine === false) {
+            if (currCell.isMine === false && currCell.isShown === false) {
                 emptyCells.push({ i, j })
             }
         }

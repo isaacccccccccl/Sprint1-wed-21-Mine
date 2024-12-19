@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Mine Sweeper</title>
     <link rel="stylesheet" href="css/main.css">
 </head>
 
@@ -17,6 +17,9 @@
                 <td class="smile" onclick="restartGame()">😁</td>
                 <td class="mine"></td>
                 <td class="life"></td>
+                <td class="hint" onclick="hintClicked()"></td>
+                <td class="safe-click" onclick="safeClick()"></td>
+                <td class="mega-hint" onclick="megaHint()"></td>
             </tr>
         </tbody>
     </table>
